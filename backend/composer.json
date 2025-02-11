@@ -1,0 +1,5 @@
+{
+    "name": "bokzg/backend",
+    "description": "Backend service for exam-bank",
+    "require": {}
+}
