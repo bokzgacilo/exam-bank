@@ -14,7 +14,6 @@ export default function QuestionPage() {
     axios.get(`http://localhost:8080/api/QuestionRoute.php?action=viewAll&subject=${localStorage.getItem("usersubject")}`)
       .then(response => {
         SetQuestions(response.data);
-        console.log(response.data)
       });
   }, []);
 
@@ -36,7 +35,6 @@ export default function QuestionPage() {
             <QuestionDataTable data={Questions}/>
           </CardBody>
         </Card>
-        
       </Stack>
     </Stack>
   );

@@ -31,7 +31,7 @@ class Question
     }
 
     return $stmt->fetch_all(MYSQLI_ASSOC);
-}
+  }
 
 
 

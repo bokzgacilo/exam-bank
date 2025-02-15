@@ -10,7 +10,7 @@ export default function ExamPage() {
   const [Exams, SetExams] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/ExamRoute.php?action=viewAll`)
+    axios.get(`http://localhost:8080/api/ExamRoute.php?action=viewAll&subject=${localStorage.getItem("usersubject")}`)
       .then(response => {
         SetExams(response.data)
       });

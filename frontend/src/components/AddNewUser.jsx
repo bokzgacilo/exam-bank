@@ -1,12 +1,8 @@
 import {
   Button,
   Stack,
-  Radio,
-  RadioGroup,
   Select,
-  Flex,
   Text,
-  Textarea,
   Input,
   AlertDialog,
   AlertDialogBody,
@@ -16,9 +12,8 @@ import {
   AlertDialogOverlay,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { POST_QUESTION_URL } from "../helper/endpoints";
 
 import PropTypes from "prop-types";
 AddNewUserForm.propTypes = {

@@ -2,7 +2,6 @@ import {
   Stack,
   Radio,
   RadioGroup,
-  Select,
   Flex,
   Text,
   Textarea,
@@ -12,7 +11,6 @@ import {
   SimpleGrid,
   Button,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
 
 import PropTypes from "prop-types";
 QuestionDetail.propTypes = {

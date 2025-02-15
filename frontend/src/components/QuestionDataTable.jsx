@@ -29,7 +29,6 @@ export default function QuestionDataTable({ data }) {
   const QuestionTemplate = (rowData) => (
     <Button
       variant="link"
-      colorScheme="blue"
       onClick={() => openDrawer(rowData)}
     >
       {rowData.question}
