@@ -79,7 +79,7 @@ export default function CreateQuestionForm({isOpen, onClose}) {
       case "Enumeration":
         SetMultipleChoices([]);
         break;
-      case "Multiple Choice":
+      case "Multiple":
         SetMultipleChoices([
           { id: 1, option: "Option 1", is_correct: false },
           { id: 2, option: "Option 2", is_correct: false },
@@ -141,7 +141,7 @@ export default function CreateQuestionForm({isOpen, onClose}) {
             </Stack>
           </RadioGroup>
         );
-      case 'Multiple Choice':
+      case 'Multiple':
         return (
           <RadioGroup>
             <Stack spacing={2}>
