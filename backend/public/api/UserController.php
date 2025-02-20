@@ -20,7 +20,7 @@ class User
   // Read all user
   public function viewAll()
   {
-    $query = "SELECT * FROM user";
+    $query = "SELECT * FROM user WHERE type <> 'admin'";
     $result = $this->conn->query($query);
     return $result->fetch_all(MYSQLI_ASSOC);
   }
@@ -42,6 +42,38 @@ class User
     $query = "UPDATE user SET title = ?, description = ?, exam_date = ? WHERE id = ?";
     $stmt = $this->conn->prepare($query);
     $stmt->bind_param("sssi", $title, $description, $date, $id);
+    return $stmt->execute();
+  }
+
+  public function login($username, $password)
+  {
+    $stmt = $this->conn->prepare("SELECT * FROM user WHERE username = ? AND password = ?");
+    $stmt->bind_param("ss", $username, $password);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+      $row = $result->fetch_assoc();
+
+      return json_encode($row);
+    }else {
+      return [];
+    }
+  }
+
+  public function change_password($id, $password)
+  {
+    $query = "UPDATE user SET password = ? WHERE id = ?";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bind_param("si", $password, $id);
+    return $stmt->execute();
+  }
+
+  public function change_status($id, $status)
+  {
+    $query = "UPDATE user SET status = ? WHERE id = ?";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bind_param("si", $status, $id);
     return $stmt->execute();
   }
 

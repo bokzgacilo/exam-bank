@@ -26,7 +26,6 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { POST_QUESTION_URL } from "../helper/endpoints";
 
 import PropTypes from "prop-types";
 CreateExamForm.propTypes = {

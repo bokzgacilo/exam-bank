@@ -21,7 +21,7 @@ import {
   Tag,
   Text,
   ModalFooter,
-  Link,
+  useToast
 } from "@chakra-ui/react";
 import { Button, useDisclosure } from "@chakra-ui/react";
 
@@ -35,7 +35,10 @@ export default function ExamDataTable({ data }) {
   const [globalFilter, setGlobalFilter] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [SelectedExam, SetSelectedExam] = useState(null);
+  const [AccessCode, SetAccessCode] = useState("")
   const [DLink, SetLink] = useState("")
+  const toast = useToast();
+
   const StatusTemplate = (rowData) =>
     rowData.status === "1" ? (
       <Tag colorScheme="green">Active</Tag>
@@ -51,7 +54,6 @@ export default function ExamDataTable({ data }) {
 
   const openDrawer = (rowData) => {
     SetSelectedExam(rowData);
-    console.log(rowData);
     onOpen();
   };
 
@@ -114,10 +116,27 @@ export default function ExamDataTable({ data }) {
   };
 
   const HandleExportToBlackboard = () => {
-    axios.post(`http://localhost:8080/api/ExamRoute.php?action=export`, {data: JSON.parse(SelectedExam.questions)})
+    if(AccessCode === SelectedExam.access_code){
+      toast({
+        title: 'Access Granted',
+        description: "Click the download button to download file",
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      })
+
+      axios.post(`http://localhost:8080/api/ExamRoute.php?action=export`, {data: JSON.parse(SelectedExam.questions)})
       .then(response => {
         SetLink(response.data)
       });
+    }else {
+      toast({
+        title: 'Error Access Code',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
   return (
@@ -151,9 +170,12 @@ export default function ExamDataTable({ data }) {
             </>
           )}
           <ModalFooter>
-            <Button colorScheme="blue" onClick={HandleExportToBlackboard} mr={2}>Export for Blackboard</Button>
-            {DLink !== "" && <Button onClick={() => window.open(`http://localhost:8080${DLink}`, "_blank")} mr={2}>Download</Button>}
-            <Button onClick={onClose}>Close</Button>
+            <Flex direction="row" gap={2}>
+              <Input valie={AccessCode} onChange={(e) => SetAccessCode(e.currentTarget.value)} type="text" placeholder="Access Code"></Input>
+              <Button colorScheme="blue" onClick={HandleExportToBlackboard}>Export</Button>
+              {DLink !== "" && <Button onClick={() => window.open(`http://localhost:8080${DLink}`, "_blank")}>Download</Button>}
+              <Button onClick={onClose}>Close</Button>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -186,7 +208,8 @@ export default function ExamDataTable({ data }) {
           sortable
         ></Column>
         <Column field="subject" header="Subject" filter sortable></Column>
-        <Column field="access_code" header="Access Code" sortable></Column>
+        {localStorage.getItem("usertype") !== "Instructor" && <Column field="access_code" header="Access Code" sortable></Column>}
+        
         <Column field="created_by" header="Created By" sortable></Column>
         <Column
           field="approval_status"

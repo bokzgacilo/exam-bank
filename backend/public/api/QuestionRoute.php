@@ -20,24 +20,27 @@ switch ($action) {
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (!$data || !isset($data["name"], $data["role"], $data["assigned_subject"], $data["username"], $data["password"])) {
+        if (!$data || !isset($data["question"], $data["options"], $data["answer"], $data["category"], $data["created_by"], $data["subject"])) {
             echo json_encode(["message" => "Invalid input"]);
             exit;
         }
 
-        $result = $question->create($data["name"], $data["role"], $data["assigned_subject"], $data["username"], $data["password"]);
+        $optionsJson = json_encode($data["options"]); 
+        $answerJson = json_encode($data["answer"]);
 
-        echo json_encode(["message" => $result ? "User created successfully" : "Failed to create user"]);
+        $result = $question->create($data["question"], $optionsJson, $answerJson, $data["category"], $data["created_by"], $data["subject"]);
+
+        echo json_encode(["message" => $result ? "Question created successfully" : "Failed to create question"]);
         break;
 
     case "viewAll":
-        if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-          echo json_encode(["message" => "Invalid request method"]);
-          exit;
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            echo json_encode(["message" => "Invalid request method"]);
+            exit;
         }
-        $subject = $_GET['subject'];
-        
-        $questions = $question -> viewAll($subject);
+
+        $data = json_decode(file_get_contents("php://input"), true);
+        $questions = $question -> viewAll($data["name"], $data["type"]);
 
         echo json_encode($questions);
         break;

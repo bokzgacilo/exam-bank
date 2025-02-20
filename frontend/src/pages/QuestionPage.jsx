@@ -11,7 +11,10 @@ export default function QuestionPage() {
   const [Questions, SetQuestions] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/QuestionRoute.php?action=viewAll&subject=${localStorage.getItem("usersubject")}`)
+    axios.post(`http://localhost:8080/api/QuestionRoute.php?action=viewAll`, {
+      name: localStorage.getItem("userfullname"),
+      type: localStorage.getItem("usertype")
+    })
       .then(response => {
         SetQuestions(response.data);
       });

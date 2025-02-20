@@ -2,8 +2,8 @@ PROF ROLE SIDE / INSTRUCTOR
 
 1: edit profile pwede mag change pass change pic 
 2: dapat hindi ma access ni prof 1 yung gawa ni prof 2 na questions dapat kung sino gumawa siya lang makaka edit
-3: si prof is taga gawa lang ng questions
-4: si prof dapat hindi makagawa ng exam pero pwede siya makapag export for blackboard dun sa exam bank na ginawa ni coordinator and dapat ma access using access code so hindi dapat basta basta ma export dapat access code muna
+✅ 3: si prof is taga gawa lang ng questions
+✅ 4: si prof dapat hindi makagawa ng exam pero pwede siya makapag export for blackboard dun sa exam bank na ginawa ni coordinator and dapat ma access using access code so hindi dapat basta basta ma export dapat access code muna
 
 
 COORDINATOR ROLE SIDE
@@ -18,14 +18,14 @@ EXAM BANK
 1: si coordinator lang nakakagalaw
 
 ADMIN SIDE
-1: can view credentials 
-2: can change password (para if makalimutan ni prof yung password niya)
-3: pwede mag deactivate ng prof user (para pag nag resign na si prof)
-4: lahat ng kaya i access ni coordinator and prof dapat kaya ni admin
+✅ 1: can view credentials 
+✅ 2: can change password (para if makalimutan ni prof yung password niya)
+✅ 3: pwede mag deactivate ng prof user (para pag nag resign na si prof)
+✅ 4: lahat ng kaya i access ni coordinator and prof dapat kaya ni admin
 
 
 
-+di maka create questions
-+sa choices walang bar para mag lagay ng correct answer
+✅ +di maka create questions
+✅ +sa choices walang bar para mag lagay ng correct answer
 
 +++ SPECIAL/UNIQUE FEATURES

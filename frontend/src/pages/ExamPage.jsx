@@ -24,9 +24,9 @@ export default function ExamPage() {
           <CardHeader backgroundColor="#2b2b2b" color="#fff">
             <Flex direction="row" alignItems="center" justifyContent="space-between">
               <Heading size="md">EXAM LIST</Heading>
-              <Flex direction="row" gap={2}>
+              {localStorage.getItem("usertype") !== "Instructor" && <Flex direction="row" gap={2}>
                 <Button leftIcon={<BiPlus />} colorScheme="green" onClick={onOpen}>Create Exam</Button>
-              </Flex>
+              </Flex>}
             </Flex>
           </CardHeader>
           <Divider />

@@ -14,27 +14,86 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   AlertDialogContent,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Image,
+  Stack,
+  Input,
 } from "@chakra-ui/react";
 import { useRef } from "react";
-import { BiLogOut, BiNotepad } from "react-icons/bi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import LOGO from "../assets/logo.png";
+import { TbChartDots, TbFileDescription, TbList, TbLogout2, TbQuestionMark, TbUsers } from "react-icons/tb";
 
 export default function SidebarComponent() {
   const location = useLocation();
   const Usertype = localStorage.getItem("usertype");
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenProfileModal, onOpen : onOpenProfileModal, onClose : onCloseProfileModal } = useDisclosure();
   const cancelRef = useRef();
   const navigate = useNavigate();
 
-  const navigationItems = [
-    {
-      to: "questions",
-      label: "Question Bank",
-      pathname: "/dashboard/questions",
-    },
-    { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams" },
-    { to: "users", label: "User Management", pathname: "/dashboard/users" }
-  ];
+  const UserJSON = JSON.parse(localStorage.getItem("userjson"))
+
+  const navigationItems = (() => {
+    switch (localStorage.getItem("usertype")) {
+      case "Instructor":
+        return [
+          {
+            to: "questions",
+            label: "Question Bank",
+            pathname: "/dashboard/questions",
+            icon: TbQuestionMark
+          },
+          { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams", icon: TbFileDescription },
+        ];
+      case "Admin":
+        return [
+          {
+            to: "questions",
+            label: "Question Bank",
+            pathname: "/dashboard/questions",
+            icon: TbQuestionMark
+          },
+          { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams", icon: TbFileDescription },
+          {
+            to: "users",
+            label: "User Management",
+            pathname: "/dashboard/users",
+            icon: TbUsers
+          },
+          {
+            to: "subjects",
+            label: "Subjects",
+            pathname: "/dashboard/subjects",
+            icon: TbList
+          },
+          {
+            to: "statistics",
+            label: "Statistics",
+            pathname: "/dashboard/subjects",
+            icon: TbChartDots
+          },
+        ];
+      case "Coordinator":
+        return [
+          {
+            to: "questions",
+            label: "Question Bank",
+            pathname: "/dashboard/questions",
+            icon: TbQuestionMark
+          },
+          { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams", icon: TbFileDescription },
+        ];
+      default:
+        return [];
+    }
+  })();
 
   const HandleLogout = () => {
     localStorage.clear();
@@ -49,6 +108,38 @@ export default function SidebarComponent() {
       backgroundColor="#2b2b2b"
       color="#fff"
     >
+      <Modal isOpen={isOpenProfileModal} onClose={onCloseProfileModal}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{localStorage.getItem("userfullname")}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            
+          </ModalBody>
+            <Stack p={4}>
+              <Flex direction="row" gap={8} mb={4}>
+                <Avatar size="2xl" src={UserJSON.avatar} />
+                <Stack>
+                  <Input type="file" />
+                  <Text>Only upload supported file types.</Text>
+                </Stack>
+              </Flex>
+              <Heading size="md">Username</Heading>
+              <Input value={UserJSON.username} isReadOnly />
+              <Heading size="md" mt={4}>Password</Heading>
+              <Input value={UserJSON.password} />
+            </Stack>
+          <ModalFooter>
+            <Button colorScheme="green" mr={4}>
+              Save Changes
+            </Button>
+            <Button onClick={onCloseProfileModal}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
@@ -69,10 +160,11 @@ export default function SidebarComponent() {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
-      <Heading size="lg" mb={8}>
+      <Image alignSelf="center" mt={4} w={"30%"} src={LOGO} />
+      <Heading textAlign="center" mb={4}>
         Exam Bank
       </Heading>
-      <Card backgroundColor="#b0b0b021">
+      <Card backgroundColor="#b0b0b021" onClick={onOpenProfileModal} cursor="pointer">
         <CardBody>
           <Flex direction="row" alignItems="center" color="#fff" gap={4}>
             <Avatar src={localStorage.getItem("useravatar")} />
@@ -85,11 +177,15 @@ export default function SidebarComponent() {
           </Flex>
         </CardBody>
       </Card>
-      <Heading size="md" mb={8}>
+      <Heading size="lg" mt={4}>
         Menu
       </Heading>
       {navigationItems.map((item) => {
-        if (Usertype !== "admin" && item.to === "users" && item.to === "subjects") {
+        if (
+          Usertype !== "admin" &&
+          item.to === "users" &&
+          item.to === "subjects"
+        ) {
           return null;
         }
 
@@ -111,7 +207,7 @@ export default function SidebarComponent() {
               location.pathname === item.pathname ? "#b0b0b021" : ""
             }
           >
-            <Icon as={BiNotepad} />
+            <Icon as={item.icon} />
             <Text>{item.label}</Text>
           </Flex>
         );
@@ -128,7 +224,7 @@ export default function SidebarComponent() {
         justifyContent="center"
         onClick={onOpen}
       >
-        <Icon as={BiLogOut} />
+        <Icon as={TbLogout2} />
         <Text>Log Out</Text>
       </Flex>
     </Flex>

@@ -23,7 +23,6 @@
     echo json_encode(["error" => "User not found"]);
   }
 
-  // Close connections
   $stmt->close();
   $conn->close();
 ?>

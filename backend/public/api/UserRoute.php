@@ -39,7 +39,39 @@ switch ($action) {
         $users = $user->viewAll();
         echo json_encode($users);
         break;
+    case "change_status":
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            echo json_encode(["message" => "Invalid request method"]);
+            exit;
+        }
+        $data = json_decode(file_get_contents("php://input"), true);
+        $users = $user->change_status($data['id'], $data['status']);
+        echo json_encode($users);
+        break;
+    case "change_password":
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            echo json_encode(["message" => "Invalid request method"]);
+            exit;
+        }
+        $data = json_decode(file_get_contents("php://input"), true);
+        $users = $user->change_password($data['id'], $data['password']);
+        echo json_encode($users);
+        break;
 
+    case "login":
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            echo json_encode(["message" => "Invalid request method"]);
+            exit;
+        }
+        $data = json_decode(file_get_contents("php://input"), true);
+        $users = $user->login($data['username'], $data['password']);
+
+        if ($users) {
+            echo $users;
+        } else {
+            echo json_encode(["success" => false, "message" => "Invalid username or password"]);
+        }
+        break;
     default:
         echo json_encode(["message" => "Invalid action"]);
 }

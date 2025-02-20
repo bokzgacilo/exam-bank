@@ -9,32 +9,31 @@ class Question
   }
 
   // Create a new exam
-  public function create($title, $description, $date)
+  public function create( $question, $options, $answer, $category, $name, $subject)
   {
-    $query = "INSERT INTO exam (title, description, exam_date) VALUES (?, ?, ?)";
+    $query = "INSERT INTO question (question, options, answer, category, created_by, subject) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $this->conn->prepare($query);
-    $stmt->bind_param("sss", $title, $description, $date);
+    $stmt->bind_param("ssssss", $question, $options, $answer, $category, $name, $subject);
+
     return $stmt->execute();
   }
 
-  // Read all exams
-  public function viewAll($assigned_subject) {
-    if ($assigned_subject === "none") {
-        $query = "SELECT * FROM question"; // No WHERE condition
+  public function viewAll($name, $type) {
+    if ($type === "Admin" || $type === "Coordinator") {
+        $query = "SELECT * FROM question";
         $stmt = $this->conn->query($query);
-    } else {
-        $query = "SELECT * FROM question WHERE subject = ?";
+    } else if ($type === "Instructor") {
+        $query = "SELECT * FROM question WHERE created_by = ?";
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $assigned_subject);
+        $stmt->bind_param("s", $name);
         $stmt->execute();
         $stmt = $stmt->get_result();
+    } else {
+        return [];
     }
 
     return $stmt->fetch_all(MYSQLI_ASSOC);
   }
-
-
-
   // Read a single exam
   public function view($id)
   {

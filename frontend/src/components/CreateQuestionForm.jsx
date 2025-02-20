@@ -18,7 +18,6 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { POST_QUESTION_URL } from "../helper/endpoints";
 
 import PropTypes from "prop-types";
 CreateQuestionForm.propTypes = {
@@ -43,9 +42,9 @@ export default function CreateQuestionForm({isOpen, onClose}) {
   }
 
   const HandleCreate = () => {
-    axios.post(POST_QUESTION_URL, data)
+    axios.post("http://localhost:8080/api/QuestionRoute.php?action=create", data)
       .then(response => {
-        if(response.data === 1){
+        if(response.data){
           toast({
             title: "Question Created!",
             description: `Question: ${Question} successfully created`,
