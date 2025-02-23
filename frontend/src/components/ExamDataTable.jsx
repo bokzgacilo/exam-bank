@@ -145,7 +145,6 @@ export default function ExamDataTable({ data }) {
         onClose={onClose}
         isOpen={isOpen}
         scrollBehavior="outside"
-        size="3xl"
       >
         <ModalOverlay />
         <ModalContent>

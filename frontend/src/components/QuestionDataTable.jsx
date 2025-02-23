@@ -3,14 +3,8 @@ import { DataTable } from "primereact/datatable";
 
 import { useState } from "react";
 import { PrimeReactProvider } from "primereact/api";
-import { Divider, Heading, Input, Stack, Tag } from "@chakra-ui/react";
+import { Divider, Heading, Input, Modal, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Stack, Tag } from "@chakra-ui/react";
 import {
-  Drawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -45,16 +39,18 @@ export default function QuestionDataTable({ data }) {
 
   return (
     <PrimeReactProvider>
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="md">
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader></DrawerHeader>
-          <DrawerBody>
-            <QuestionDetail QuestionData={selectedQuestion} />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalCloseButton />
+
+        <ModalContent>
+        <ModalCloseButton />
+          <ModalHeader>
+            <Heading size="lg">Question</Heading>
+          </ModalHeader>
+          <QuestionDetail QuestionData={selectedQuestion} />
+        </ModalContent>
+      </Modal>
       <Stack>
         <Heading size="md">SEARCH</Heading>
         <Input

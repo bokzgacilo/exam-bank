@@ -60,6 +60,37 @@ class User
       return [];
     }
   }
+public function change_avatar($id, $avatar, $password)
+{
+    $query = "UPDATE user SET password = ? WHERE id = ?";
+    
+    // Check if an avatar is provided
+    if ($avatar) {
+        $uploadDir = "../user_images/$id/";
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $extension = pathinfo($avatar["name"], PATHINFO_EXTENSION);
+        $fileName = "avatar_$id.$extension";
+        $imagePath = "user_images/$id/" . $fileName;
+
+        if (move_uploaded_file($avatar["tmp_name"], "../" . $imagePath)) {
+            $query = "UPDATE user SET avatar = ?, password = ? WHERE id = ?";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bind_param("ssi", $imagePath, $password, $id);
+        } else {
+            return false;
+        }
+    } else {
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("si", $password, $id);
+    }
+
+    return $stmt->execute();
+}
+
 
   public function change_password($id, $password)
   {

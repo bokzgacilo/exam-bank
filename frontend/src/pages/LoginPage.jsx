@@ -12,21 +12,18 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import LOGO from "../assets/logo.png";
-import { useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { TbLogin2 } from "react-icons/tb";
 import { Formik, Form, Field } from "formik";
+import useUserStore from "../helper/useUserStore";
+import useAuthStore from "../helper/useAuthStore";
 
 export default function LoginPage() {
+  const { setUser } = useUserStore();
+  const setUserId = useAuthStore((state) => state.setUserId);
   const navigate = useNavigate();
   const toast = useToast();
-
-  useEffect(() => {
-    if (localStorage.getItem("userid")) {
-      navigate("/dashboard");
-    }
-  }, []);
 
   return (
     <Container maxW="400px">
@@ -38,33 +35,58 @@ export default function LoginPage() {
             <Formik
               initialValues={{ username: "", password: "" }}
               onSubmit={(values, actions) => {
-                axios.post("http://localhost:8080/api/UserRoute.php?action=login", values).then((response) => {
-                  if (response.data.id !== undefined) {
-                    localStorage.setItem("userid", response.data.id);
-                    localStorage.setItem("userfullname", response.data.name);
-                    localStorage.setItem("usertype", response.data.type);
-                    localStorage.setItem("usersubject", response.data.assigned_subject);
-                    localStorage.setItem("useravatar", response.data.avatar);
-                    localStorage.setItem("userjson", JSON.stringify(response.data));
-                    toast({
-                      title: "Login Successfully",
-                      description: "Welcome back " + response.data.name,
-                      status: "success",
-                      duration: 5000,
-                      isClosable: true,
-                    });
+                axios
+                  .post(
+                    "http://localhost:8080/api/UserRoute.php?action=login",
+                    values
+                  )
+                  .then((response) => {
+                    if (response.data.id !== undefined) {
+                      setUserId(response.data.id);
 
-                    navigate("/dashboard");
-                  } else {
+                      const userData = {
+                        id: response.data.id,
+                        fullname: response.data.name,
+                        username: response.data.username,
+                        password: response.data.password,
+                        avatar: "http://localhost:8080/" + response.data.avatar,
+                        usertype: response.data.type,
+                        user_assigned_subject:
+                          response.data.assigned_subject || [],
+                      };
+
+                      useUserStore.getState().setUser(userData)
+
+                      toast({
+                        title: "Login Successfully",
+                        description: "Welcome back " + userData.fullname,
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                      });
+
+                      navigate("/dashboard");
+                    } else {
+                      toast({
+                        title: "Login Failed",
+                        description: response.data.message,
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Login Error:", error);
                     toast({
                       title: "Login Failed",
-                      description: response.data.message,
+                      description: "Something went wrong. Please try again.",
                       status: "error",
                       duration: 3000,
                       isClosable: true,
                     });
-                  }
-                });
+                  });
+
                 actions.setSubmitting(false);
               }}
             >

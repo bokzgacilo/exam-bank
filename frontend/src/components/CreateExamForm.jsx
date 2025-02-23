@@ -13,7 +13,6 @@ import {
   ModalFooter,
   Heading,
   SimpleGrid,
-  Divider,
   Select,
   Flex,
   Textarea,
@@ -23,11 +22,14 @@ import {
   Card,
   CardBody,
   Tag,
+  Icon,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 import PropTypes from "prop-types";
+import useUserStore from "../helper/useUserStore";
+import { TbArrowDown, TbArrowUp } from "react-icons/tb";
 CreateExamForm.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
@@ -37,17 +39,22 @@ const AccessCode = Math.floor(100000 + Math.random() * 900000);
 export default function CreateExamForm({ isOpen, onClose }) {
   const toast = useToast();
   const [QuestionSet, SetQuestionSet] = useState([]);
-  const [ExamName, SetExamName] = useState("")
+  const [ExamName, SetExamName] = useState("");
   const [Questions, SetQuestions] = useState([]);
-  const [Subject, SetSubject] = useState(localStorage.getItem("usersubject") !== "none" ? localStorage.getItem("usersubject") : "Math")
+  const {fullname, user_assigned_subject} = useUserStore(state => state.user)
+  const [Subject, SetSubject] = useState(
+    user_assigned_subject !== "none"
+      ? user_assigned_subject
+      : "Math"
+  );
 
   const data = {
-    exam_name : ExamName,
-    subject : Subject,
-    access_code : AccessCode,
+    exam_name: ExamName,
+    subject: Subject,
+    access_code: AccessCode,
     questions: QuestionSet,
-    created_by : localStorage.getItem("userfullname")
-  }
+    created_by: fullname,
+  };
 
   const handleCheckboxChange = (id) => {
     SetQuestionSet((prevItems) => {
@@ -121,11 +128,7 @@ export default function CreateExamForm({ isOpen, onClose }) {
 
   useEffect(() => {
     axios
-      .get(
-        `http://localhost:8080/api/ExamRoute.php?action=getAllQuestion&subject=${localStorage.getItem(
-          "usersubject"
-        )}`
-      )
+      .get(`http://localhost:8080/api/ExamRoute.php?action=getAllQuestion&subject=${user_assigned_subject}`)
       .then((response) => {
         SetQuestions(response.data);
       });
@@ -144,7 +147,11 @@ export default function CreateExamForm({ isOpen, onClose }) {
         );
       default:
         return (
-          <Select mb={4} value={Subject} onChange={(e) => SetSubject(e.target.value)}>
+          <Select
+            mb={4}
+            value={Subject}
+            onChange={(e) => SetSubject(e.target.value)}
+          >
             <option>Programming Language II</option>
             <option>Math</option>
             <option>Computer Programming</option>
@@ -171,91 +178,122 @@ export default function CreateExamForm({ isOpen, onClose }) {
   };
 
   const HandleCreateExam = () => {
-    axios.post('http://localhost:8080/api/ExamRoute.php?action=create', data)
-      .then(response => {
-        console.log(response.data)
+    axios
+      .post("http://localhost:8080/api/ExamRoute.php?action=create", data)
+      .then((response) => {
+        console.log(response.data);
 
         toast({
           title: "Exam Created!",
           description: response.data.message,
-          status: 'success',
+          status: "success",
           duration: 3000,
           isClosable: true,
-        })
+        });
 
-        onClose()
-      })
-  }
+        onClose();
+      });
+  };
+
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const categories = ["All", ...new Set(Questions.map((q) => q.category))];
+
+  const filteredQuestions =
+    selectedCategory === "All"
+      ? Questions
+      : Questions.filter((q) => q.category === selectedCategory);
 
   return (
-    <Modal  scrollBehavior="inside" onClose={onClose} size="full" isOpen={isOpen}>
+    <Modal
+      scrollBehavior="inside"
+      onClose={onClose}
+      size="6xl"
+      isOpen={isOpen}
+    >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader fontWeight="bold">EXAM BUILDER</ModalHeader>
+        <ModalHeader>EXAM BUILDER {AccessCode}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <SimpleGrid templateColumns="20% 1fr 40%" gap={4}>
+          <SimpleGrid templateColumns="1fr 1fr" gap={4}>
+            <Stack backgroundColor="#e2e2e2" p={4}>
+              {QuestionSet.map((item, index) => (
+                <Card key={item.id}>
+                  <CardBody>
+                    <Stack spacing={4}>
+                      <Flex direction="row">
+                        <Text fontWeight="semibold" mr="auto">
+                          {index + 1}. {item.question}
+                        </Text>
+                        <Button
+                          size="xs"
+                          mr={1}
+                          onClick={() => moveItem(index, -1)}
+                          isDisabled={index === 0}
+                        >
+                          <Icon as={TbArrowUp} />
+                        </Button>
+                        <Button
+                          size="xs"
+                          onClick={() => moveItem(index, 1)}
+                          isDisabled={index === QuestionSet.length - 1}
+                        >
+                          <Icon as={TbArrowDown} />
+                        </Button>
+                      </Flex>
+                      {renderFormElement(item.options, item.category)}
+                    </Stack>
+                  </CardBody>
+                </Card>
+              ))}
+            </Stack>
             <Stack>
               <Heading size="md">Exam Info</Heading>
-              <Divider />
-              <Text fontWeight="semibold">Exam Name</Text>
-              <Input type="text" mb={4} value={ExamName} onChange={(e) => SetExamName(e.currentTarget.value)} />
-              <Text fontWeight="semibold">Subject</Text>
-              {UserSubject()}
-              <Text fontWeight="semibold">Access Code</Text>
-              <Input type="text" mb={4} isReadOnly value={AccessCode} />
-            </Stack>
-            <Stack>
-              <Stack backgroundColor="#e2e2e2" p={4}>
-                {QuestionSet.map((item, index) => (
-                  <Card key={item.id}>
-                    <CardBody>
-                      <Stack spacing={4}>
-                        <Flex direction="row">
-                          <Text fontWeight="semibold" mr="auto">
-                            {index + 1}. {item.question}
-                          </Text>
-                          <Button
-                            size="xs"
-                            mr={4}
-                            onClick={() => moveItem(index, -1)}
-                            isDisabled={index === 0}
-                          >
-                            Move Up
-                          </Button>
-                          <Button
-                            size="xs"
-                            onClick={() => moveItem(index, 1)}
-                            isDisabled={index === QuestionSet.length - 1}
-                          >
-                            Move Down
-                          </Button>
-                        </Flex>
-                        {renderFormElement(item.options, item.category)}
-                      </Stack>
-                    </CardBody>
-                  </Card>
-                ))}
-              </Stack>
-            </Stack>
-            <Stack>
+                <Text fontWeight="semibold">EXAM NAME</Text>
+                <Input
+                  type="text"
+                  mb={4}
+                  value={ExamName}
+                  onChange={(e) => SetExamName(e.currentTarget.value)}
+                />
+                <Text fontWeight="semibold">SUBJECT</Text>
+                {UserSubject()}
               <Flex direction="row" justifyContent="space-between">
-                <Heading size="md" mb={4}>Question Bank</Heading>
+                <Heading size="md" mb={4}>
+                  Question Bank
+                </Heading>
                 <Text>{Questions.length}</Text>
               </Flex>
               <Stack spacing={4} overflow="auto">
-                {Questions.map((item) => (
-                  <Flex direction="row" key={item.id}>
-                    <Checkbox
-                    key={item.id}
-                    mr={4}
-                    onChange={() => handleCheckboxChange(item.id)}
-                    isChecked={QuestionSet.some((q) => q.id === item.id)} />
-                    <Text fontWeight="semibold">{item.question}</Text>
-                    <Tag ml="auto" size="sm">{item.category}</Tag>
-                  </Flex>
-                  
-                ))}
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  mb={4}
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </Select>
+
+                <Stack spacing={4} overflow="auto">
+                  {filteredQuestions.map((item) => (
+                    <Flex direction="row" key={item.id}>
+                      <Checkbox
+                        key={item.id}
+                        mr={4}
+                        onChange={() => handleCheckboxChange(item.id)}
+                        isChecked={QuestionSet.some((q) => q.id === item.id)}
+                      />
+                      <Text fontWeight="semibold">{item.question}</Text>
+                      <Tag ml="auto" size="sm">
+                        {item.category}
+                      </Tag>
+                    </Flex>
+                  ))}
+                </Stack>
               </Stack>
             </Stack>
           </SimpleGrid>

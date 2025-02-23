@@ -24,33 +24,59 @@ import {
   Image,
   Stack,
   Input,
+  useToast,
 } from "@chakra-ui/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import LOGO from "../assets/logo.png";
-import { TbChartDots, TbFileDescription, TbList, TbLogout2, TbQuestionMark, TbUsers } from "react-icons/tb";
+import {
+  TbChartDots,
+  TbFileDescription,
+  TbList,
+  TbLogout2,
+  TbQuestionMark,
+  TbUsers,
+} from "react-icons/tb";
+import axios from "axios";
+import useUserStore from "../helper/useUserStore";
+import useAuthStore from "../helper/useAuthStore";
 
 export default function SidebarComponent() {
+  const { user, setUser, clearUser } = useUserStore();
+  const logout = useAuthStore((state) => state.logout);
+  
   const location = useLocation();
-  const Usertype = localStorage.getItem("usertype");
+  const Usertype = user.userype;
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isOpenProfileModal, onOpen : onOpenProfileModal, onClose : onCloseProfileModal } = useDisclosure();
+  const {
+    isOpen: isOpenProfileModal,
+    onOpen: onOpenProfileModal,
+    onClose: onCloseProfileModal,
+  } = useDisclosure();
   const cancelRef = useRef();
   const navigate = useNavigate();
-
-  const UserJSON = JSON.parse(localStorage.getItem("userjson"))
+  const fileInputRef = useRef(null);
+  const [Preview, setPreview] = useState(user.avatar);
+  const [ImageFile, SetImageFile] = useState(null);
+  const toast = useToast();
+  const [Password, SetPassword] = useState(user.password);
 
   const navigationItems = (() => {
-    switch (localStorage.getItem("usertype")) {
+    switch (user.usertype) {
       case "Instructor":
         return [
           {
             to: "questions",
             label: "Question Bank",
             pathname: "/dashboard/questions",
-            icon: TbQuestionMark
+            icon: TbQuestionMark,
           },
-          { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams", icon: TbFileDescription },
+          {
+            to: "exams",
+            label: "Exam Bank",
+            pathname: "/dashboard/exams",
+            icon: TbFileDescription,
+          },
         ];
       case "Admin":
         return [
@@ -58,26 +84,31 @@ export default function SidebarComponent() {
             to: "questions",
             label: "Question Bank",
             pathname: "/dashboard/questions",
-            icon: TbQuestionMark
+            icon: TbQuestionMark,
           },
-          { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams", icon: TbFileDescription },
+          {
+            to: "exams",
+            label: "Exam Bank",
+            pathname: "/dashboard/exams",
+            icon: TbFileDescription,
+          },
           {
             to: "users",
             label: "User Management",
             pathname: "/dashboard/users",
-            icon: TbUsers
+            icon: TbUsers,
           },
           {
             to: "subjects",
             label: "Subjects",
             pathname: "/dashboard/subjects",
-            icon: TbList
+            icon: TbList,
           },
           {
             to: "statistics",
             label: "Statistics",
-            pathname: "/dashboard/subjects",
-            icon: TbChartDots
+            pathname: "/dashboard/statistics",
+            icon: TbChartDots,
           },
         ];
       case "Coordinator":
@@ -86,9 +117,14 @@ export default function SidebarComponent() {
             to: "questions",
             label: "Question Bank",
             pathname: "/dashboard/questions",
-            icon: TbQuestionMark
+            icon: TbQuestionMark,
           },
-          { to: "exams", label: "Exam Bank", pathname: "/dashboard/exams", icon: TbFileDescription },
+          {
+            to: "exams",
+            label: "Exam Bank",
+            pathname: "/dashboard/exams",
+            icon: TbFileDescription,
+          },
         ];
       default:
         return [];
@@ -97,7 +133,83 @@ export default function SidebarComponent() {
 
   const HandleLogout = () => {
     localStorage.clear();
+    clearUser()
+    logout();
     navigate("/login");
+  };
+
+  const HandleChangeAvatar = () => {
+    fileInputRef.current.click();
+  };
+
+  const HandleFileChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+        SetImageFile(file);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const HandleSaveChanges = () => {
+
+    const passwordRegex = /^\S{8,}$/;
+
+    if (!passwordRegex.test(Password)) {
+      toast({
+        title: "Invalid Password",
+        description:
+          "Password must be at least 8 characters long and contain no spaces.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const file = fileInputRef.current.files[0];
+
+    const formData = new FormData();
+    formData.append("password", Password);
+    formData.append("id", user.userid);
+
+    if (file) {
+      formData.append("avatar", ImageFile);
+    }
+
+    axios
+      .post(
+        "http://localhost:8080/api/UserRoute.php?action=change_avatar",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      )
+      .then((response) => {
+        console.log("Image uploaded successfully", response.data);
+        toast({
+          title: "Image Updated",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+
+        const updatedUser = {
+          ...user,
+          password: Password, // Update password
+          avatar: file ? "http://localhost:8080/" + response.data.avatar : user.avatar, // Update avatar only if a new file was uploaded
+        };
+  
+        // Update Zustand store
+        setUser(updatedUser);
+      })
+      .catch((error) => {
+        console.error("Error uploading image", error);
+      });
   };
 
   return (
@@ -111,31 +223,40 @@ export default function SidebarComponent() {
       <Modal isOpen={isOpenProfileModal} onClose={onCloseProfileModal}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{localStorage.getItem("userfullname")}</ModalHeader>
+          <ModalHeader>{user.fullname}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            
-          </ModalBody>
-            <Stack p={4}>
-              <Flex direction="row" gap={8} mb={4}>
-                <Avatar size="2xl" src={UserJSON.avatar} />
-                <Stack>
-                  <Input type="file" />
-                  <Text>Only upload supported file types.</Text>
-                </Stack>
-              </Flex>
-              <Heading size="md">Username</Heading>
-              <Input value={UserJSON.username} isReadOnly />
-              <Heading size="md" mt={4}>Password</Heading>
-              <Input value={UserJSON.password} />
-            </Stack>
+          <ModalBody></ModalBody>
+          <Stack p={4}>
+            <Avatar
+              onClick={HandleChangeAvatar}
+              cursor="pointer"
+              alignSelf="center"
+              size="2xl"
+              src={Preview}
+              mb={4}
+            />
+            <Input
+              type="file"
+              accept=".jpg, .png"
+              ref={fileInputRef}
+              hidden
+              onChange={HandleFileChange}
+            />
+            <Heading size="md">Username</Heading>
+            <Input value={user.username} isReadOnly />
+            <Heading size="md" mt={2}>
+              Password
+            </Heading>
+            <Input
+              value={Password}
+              onChange={(e) => SetPassword(e.currentTarget.value)}
+            />
+          </Stack>
           <ModalFooter>
-            <Button colorScheme="green" mr={4}>
+            <Button colorScheme="green" mr={4} onClick={HandleSaveChanges}>
               Save Changes
             </Button>
-            <Button onClick={onCloseProfileModal}>
-              Close
-            </Button>
+            <Button onClick={onCloseProfileModal}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -164,15 +285,19 @@ export default function SidebarComponent() {
       <Heading textAlign="center" mb={4}>
         Exam Bank
       </Heading>
-      <Card backgroundColor="#b0b0b021" onClick={onOpenProfileModal} cursor="pointer">
+      <Card
+        backgroundColor="#b0b0b021"
+        onClick={onOpenProfileModal}
+        cursor="pointer"
+      >
         <CardBody>
           <Flex direction="row" alignItems="center" color="#fff" gap={4}>
-            <Avatar src={localStorage.getItem("useravatar")} />
+            <Avatar src={Preview} />
             <Flex direction="column">
               <Heading size="md">
-                {localStorage.getItem("userfullname")}
+                {user.fullname}
               </Heading>
-              <Text>{localStorage.getItem("usertype")}</Text>
+              <Text>{user.usertype}</Text>
             </Flex>
           </Flex>
         </CardBody>

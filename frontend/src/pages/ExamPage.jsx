@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import CreateExamForm from "../components/CreateExamForm";
 import ExamDataTable from "../components/ExamDataTable";
+import useUserStore from "../helper/useUserStore";
 
 export default function ExamPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {usertype} = useUserStore(state => state.user)
   const [Exams, SetExams] = useState([]);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function ExamPage() {
           <CardHeader backgroundColor="#2b2b2b" color="#fff">
             <Flex direction="row" alignItems="center" justifyContent="space-between">
               <Heading size="md">EXAM LIST</Heading>
-              {localStorage.getItem("usertype") !== "Instructor" && <Flex direction="row" gap={2}>
+              {usertype !== "Instructor" && <Flex direction="row" gap={2}>
                 <Button leftIcon={<BiPlus />} colorScheme="green" onClick={onOpen}>Create Exam</Button>
               </Flex>}
             </Flex>
@@ -34,7 +36,6 @@ export default function ExamPage() {
             <ExamDataTable data={Exams}/>
           </CardBody>
         </Card>
-        
       </Stack>
     </Stack>
   );

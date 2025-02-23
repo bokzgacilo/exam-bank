@@ -17,21 +17,38 @@ switch ($action) {
             echo json_encode(["message" => "Invalid request method"]);
             exit;
         }
-
+    
         $data = json_decode(file_get_contents("php://input"), true);
-
+    
         if (!$data || !isset($data["question"], $data["options"], $data["answer"], $data["category"], $data["created_by"], $data["subject"])) {
             echo json_encode(["message" => "Invalid input"]);
             exit;
         }
-
-        $optionsJson = json_encode($data["options"]); 
+    
+        $optionsJson = json_encode($data["options"]);
         $answerJson = json_encode($data["answer"]);
-
-        $result = $question->create($data["question"], $optionsJson, $answerJson, $data["category"], $data["created_by"], $data["subject"]);
-
-        echo json_encode(["message" => $result ? "Question created successfully" : "Failed to create question"]);
-        break;
+        $termJson = json_encode($data["terms"]);
+    
+        // Create the question and get the newly inserted row
+        $newQuestion = $question->create(
+            $data["question"],
+            $optionsJson,
+            $answerJson,
+            $data["category"],
+            $data["created_by"],
+            $data["subject"],
+            $termJson
+        );
+    
+        if ($newQuestion) {
+            echo json_encode([
+                "message" => "Question created successfully",
+                "question" => $newQuestion
+            ]);
+        } else {
+            echo json_encode(["message" => "Failed to create question"]);
+        }
+        break;    
 
     case "viewAll":
         if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -40,7 +57,7 @@ switch ($action) {
         }
 
         $data = json_decode(file_get_contents("php://input"), true);
-        $questions = $question -> viewAll($data["name"], $data["type"]);
+        $questions = $question -> viewAll($data["subject"], $data["type"]);
 
         echo json_encode($questions);
         break;
